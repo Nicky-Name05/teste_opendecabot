@@ -1,0 +1,154 @@
+#include <ESP8266WiFi.h>
+#include <espnow.h>
+#include <Servo.h>
+#include <Adafruit_GFX.h>
+#include <WEMOS_Matrix_GFX.h>
+
+#define buzzer D8
+#define LED_PIN LED_BUILTIN
+
+int lpos = 1; // posição olho esquerdo
+int rpos = 6; // posição olho direito
+int aleat = 5;
+
+bool ledState = false;
+MLED matrix(5);
+
+// Estrutura recebida (deve ser igual à do transmissor)
+typedef struct {
+  bool esquerda;
+  bool direita;
+  bool cima;
+  bool baixo;
+  bool cima_esquerda;
+  bool cima_direita;
+  bool baixo_esquerda;
+  bool baixo_direita;
+  bool centro;
+  bool botao;
+} JoystickState;
+
+JoystickState jsState;
+
+// Servos
+Servo servoEsq; 
+Servo servoDir; 
+
+// Posições dos servos
+int parado = 90;   
+int frenteEsq = 150;    
+int frenteDir = 30;  
+int trasEsq   = 30;  
+int trasDir   = 150;    
+
+// Função para movimentar o robô
+void mover(String direcao) {
+  if (direcao == "frente") {
+    servoEsq.write(frenteEsq);
+    servoDir.write(frenteDir);
+  } else if (direcao == "tras") {
+    servoEsq.write(trasEsq);
+    servoDir.write(trasDir);
+  } else if (direcao == "esquerda") {
+    servoEsq.write(frenteEsq);
+    servoDir.write(trasDir);
+  } else if (direcao == "direita") {
+    servoEsq.write(trasEsq);
+    servoDir.write(frenteDir);
+  } else if (direcao == "cima_esquerda") {
+    servoEsq.write(frenteEsq);
+    servoDir.write(50);
+  } else if (direcao == "cima_direita") {
+    servoEsq.write(130);
+    servoDir.write(frenteDir);
+  } else if (direcao == "baixo_esquerda") {
+    servoEsq.write(trasEsq);
+    servoDir.write(130);
+  } else if (direcao == "baixo_direita") {
+    servoEsq.write(50);
+    servoDir.write(trasDir);
+  } else {
+    servoEsq.write(parado);
+    servoDir.write(parado);
+  }
+  Serial.println("Movendo: " + direcao);
+}
+
+// Callback: recebe dados do ESP-NOW
+void onReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
+  if (len == sizeof(JoystickState)) {
+    memcpy(&jsState, incomingData, sizeof(JoystickState));
+
+    if (jsState.cima_esquerda) mover("cima_esquerda");
+    else if (jsState.cima_direita) mover("cima_direita");
+    else if (jsState.baixo_esquerda) mover("baixo_esquerda");
+    else if (jsState.baixo_direita) mover("baixo_direita");
+    else if (jsState.cima) mover("frente");
+    else if (jsState.baixo) mover("tras");
+    else if (jsState.esquerda) mover("esquerda");
+    else if (jsState.direita) mover("direita");
+    else mover("parar");
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.mode(WIFI_STA);
+
+  if (esp_now_init() != 0) {
+    Serial.println("Erro inicializando ESP-NOW");
+    return;
+  }
+
+  esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
+  esp_now_register_recv_cb(onReceive);
+  
+  servoEsq.attach(D0);
+  servoDir.attach(D6);
+  mover("parar");
+
+  pinMode(buzzer, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, HIGH);
+
+  matrix.setRotation(2);
+}
+
+void loop() {
+  // olhos piscando
+  matrix.clear();
+  matrix.drawLine(lpos, 2, lpos, 7, LED_ON);
+  matrix.drawLine(rpos, 2, rpos, 7, LED_ON);
+  matrix.writeDisplay();
+  delay(1000);
+
+  // piscada
+  for (int j = 0; j < random(3); j++) {
+    for (int i = 2; i < 7; i++) {
+      matrix.clear();
+      matrix.drawLine(lpos, i, lpos, 7, LED_ON);
+      matrix.drawLine(rpos, i, rpos, 7, LED_ON);
+      matrix.writeDisplay();
+      digitalWrite(buzzer, HIGH);
+      delay(15);
+      digitalWrite(buzzer, LOW);
+      delay(15);
+    }
+    for (int i = 7; i > 2; i--) {
+      matrix.clear();
+      matrix.drawLine(lpos, i, lpos, 7, LED_ON);
+      matrix.drawLine(rpos, i, rpos, 7, LED_ON);
+      matrix.writeDisplay();
+      digitalWrite(buzzer, HIGH);
+      delay(15);
+      digitalWrite(buzzer, LOW);
+      delay(15);
+    }
+  }
+
+  // olhar aleatório
+  aleat = random(10);
+  if (aleat < 2) { lpos = 0; rpos = 5; }
+  else if (aleat > 7) { lpos = 2; rpos = 7; }
+  else { lpos = 1; rpos = 6; }
+}
