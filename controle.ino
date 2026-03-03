@@ -3,7 +3,7 @@
 
 const int xPin = 32;
 const int yPin = 33;
-const int swPin = 13;
+const int swPin = 4;
 
 // MAC do ESP8266 receptor (coloque o endereço correto)
 uint8_t broadcastAddress[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -70,6 +70,8 @@ void loop() {
 
   Serial.println(y);
   Serial.println(x);
+  Serial.println(sw);
+
 
   js.centro = (x > centroMin && x < centroMax && y > centroMin && y < centroMax);
   js.botao  = (sw == LOW);
