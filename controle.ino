@@ -63,10 +63,10 @@ void loop() {
   int centroMin = 1800;
   int centroMax = 2100;
 
-  js.esquerda = (x < 1600 && y > centroMin && y < centroMax);
-  js.direita  = (x > 2200 && y > centroMin && y < centroMax);
-  js.cima     = (y < 1600 && x > centroMin && x < centroMax);
-  js.baixo    = (y > 2200 && x > centroMin && x < centroMax);
+  js.esquerda = (x < 1600 );
+  js.direita  = (x > 2200 );
+  js.cima     = (y < 1600 );
+  js.baixo    = (y > 2200 );
 
   Serial.println(y);
   Serial.println(x);
