@@ -68,11 +68,6 @@ void loop() {
   js.cima     = (y < 1600 && x > centroMin && x < centroMax);
   js.baixo    = (y > 2200 && x > centroMin && x < centroMax);
 
-  js.cima_esquerda  = (x < 1600 && y < 1600);
-  js.cima_direita   = (x > 2200 && y < 1600);
-  js.baixo_esquerda = (x < 1600 && y > 2200);
-  js.baixo_direita  = (x > 2200 && y > 2200);
-
   Serial.println(y);
   Serial.println(x);
 
