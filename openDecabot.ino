@@ -79,10 +79,10 @@ void onReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
   if (len == sizeof(JoystickState)) {
     memcpy(&jsState, incomingData, sizeof(JoystickState));
 
-    if (jsState.cima_esquerda) mover("cima_esquerda");
-    else if (jsState.cima_direita) mover("cima_direita");
-    else if (jsState.baixo_esquerda) mover("baixo_esquerda");
-    else if (jsState.baixo_direita) mover("baixo_direita");
+    if (jsState.cima && jsState.esquerda) mover("cima_esquerda");
+    else if (jsState.cima && jsState.direita) mover("cima_direita");
+    else if (jsState.baixo && jsState.esquerda) mover("baixo_esquerda");
+    else if (jsState.baixo && jsState.direita) mover("baixo_direita");
     else if (jsState.cima) mover("frente");
     else if (jsState.baixo) mover("tras");
     else if (jsState.esquerda) mover("esquerda");
