@@ -20,10 +20,6 @@ typedef struct {
   bool direita;
   bool cima;
   bool baixo;
-  bool cima_esquerda;
-  bool cima_direita;
-  bool baixo_esquerda;
-  bool baixo_direita;
   bool centro;
   bool botao;
 } JoystickState;
