@@ -64,17 +64,17 @@ void loop() {
   int sw = digitalRead(swPin);
 
   // Zonas mortas e limiares
-  int centroMin = 1700;
-  int centroMax = 2000;
+  int centroMin = 1800;
+  int centroMax = 2100;
 
-  js.esquerda = (x < 1200 && y > centroMin && y < centroMax);
+  js.esquerda = (x < 1600 && y > centroMin && y < centroMax);
   js.direita  = (x > 2200 && y > centroMin && y < centroMax);
-  js.cima     = (y < 1200 && x > centroMin && x < centroMax);
+  js.cima     = (y < 1600 && x > centroMin && x < centroMax);
   js.baixo    = (y > 2200 && x > centroMin && x < centroMax);
 
-  js.cima_esquerda  = (x < 1200 && y < 1200);
-  js.cima_direita   = (x > 2200 && y < 1200);
-  js.baixo_esquerda = (x < 1200 && y > 2200);
+  js.cima_esquerda  = (x < 1600 && y < 1600);
+  js.cima_direita   = (x > 2200 && y < 1600);
+  js.baixo_esquerda = (x < 1600 && y > 2200);
   js.baixo_direita  = (x > 2200 && y > 2200);
 
   Serial.println(y);
