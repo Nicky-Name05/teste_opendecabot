@@ -20,19 +20,20 @@ typedef struct {
   bool direita;
   bool cima;
   bool baixo;
-  bool cima_esquerda;
-  bool cima_direita;
-  bool baixo_esquerda;
-  bool baixo_direita;
   bool centro;
-  bool botao;
+  bool botaoAbre;
+  bool botaoFecha;
 } JoystickState;
+
+JoystickState js;
 
 JoystickState jsState;
 
 // Servos
 Servo servoEsq; 
 Servo servoDir; 
+Servo garra; 
+
 
 // Posições dos servos
 int parado = 90;   
@@ -74,20 +75,33 @@ void mover(String direcao) {
   Serial.println("Movendo: " + direcao);
 }
 
+void movGarra (int state) {
+  if (state == 1){
+    garra.write(50);
+    Serial.println("garra: abrindo");
+  } else if (state == 0){
+    garra.write(150);
+    Serial.println("garra: fechando");
+  }
+}
+
 // Callback: recebe dados do ESP-NOW
 void onReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
   if (len == sizeof(JoystickState)) {
     memcpy(&jsState, incomingData, sizeof(JoystickState));
 
-    if (jsState.cima_esquerda) mover("cima_esquerda");
-    else if (jsState.cima_direita) mover("cima_direita");
-    else if (jsState.baixo_esquerda) mover("baixo_esquerda");
-    else if (jsState.baixo_direita) mover("baixo_direita");
+    if (jsState.cima && jsState.esquerda) mover("cima_esquerda");
+    else if (jsState.cima && jsState.direita) mover("cima_direita");
+    else if (jsState.baixo && jsState.esquerda) mover("baixo_esquerda");
+    else if (jsState.baixo && jsState.direita) mover("baixo_direita");
     else if (jsState.cima) mover("frente");
     else if (jsState.baixo) mover("tras");
     else if (jsState.esquerda) mover("esquerda");
     else if (jsState.direita) mover("direita");
     else mover("parar");
+
+    if (jsState.botaoAbre) movGarra (1);
+    else if (jsState.botaoFecha) movGarra (0);
   }
 }
 
@@ -103,7 +117,8 @@ void setup() {
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
   esp_now_register_recv_cb(onReceive);
   
-  servoEsq.attach(D0);
+  servoEsq.attach(D3);
+  servoDir.attach(D4);
   servoDir.attach(D6);
   mover("parar");
 
