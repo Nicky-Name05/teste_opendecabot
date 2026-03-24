@@ -3,7 +3,8 @@
 
 const int xPin = 32;
 const int yPin = 33;
-const int swPin = 13;
+const int swPin = 4;
+const int sw1Pin = 13;
 
 // MAC do ESP8266 receptor (coloque o endereço correto)
 uint8_t broadcastAddress[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -14,12 +15,9 @@ typedef struct {
   bool direita;
   bool cima;
   bool baixo;
-  bool cima_esquerda;
-  bool cima_direita;
-  bool baixo_esquerda;
-  bool baixo_direita;
   bool centro;
-  bool botao;
+  bool botaoAbre;
+  bool botaoFecha;
 } JoystickState;
 
 JoystickState js;
@@ -55,6 +53,7 @@ void setup() {
   }
 
   pinMode(swPin, INPUT_PULLUP);
+  pinMode(sw1Pin, INPUT_PULLUP);
   Serial.println("Transmissor iniciado");
 }
 
@@ -62,26 +61,26 @@ void loop() {
   int x = suavizar(xPin);
   int y = suavizar(yPin);
   int sw = digitalRead(swPin);
+  int sw1 = digitalRead(sw1Pin);
 
   // Zonas mortas e limiares
   int centroMin = 1800;
   int centroMax = 2100;
 
-  js.esquerda = (x < 1600 && y > centroMin && y < centroMax);
-  js.direita  = (x > 2200 && y > centroMin && y < centroMax);
-  js.cima     = (y < 1600 && x > centroMin && x < centroMax);
-  js.baixo    = (y > 2200 && x > centroMin && x < centroMax);
-
-  js.cima_esquerda  = (x < 1600 && y < 1600);
-  js.cima_direita   = (x > 2200 && y < 1600);
-  js.baixo_esquerda = (x < 1600 && y > 2200);
-  js.baixo_direita  = (x > 2200 && y > 2200);
+  js.esquerda = (x < 1600 );
+  js.direita  = (x > 2200 );
+  js.cima     = (y < 1600 );
+  js.baixo    = (y > 2200 );
 
   Serial.println(y);
   Serial.println(x);
+  Serial.println(sw);
+  Serial.println(sw1);
+
 
   js.centro = (x > centroMin && x < centroMax && y > centroMin && y < centroMax);
-  js.botao  = (sw == LOW);
+  js.botaoFecha = (sw == LOW);
+  js.botaoAbre  = (sw1 == LOW);
 
   // Envia via ESP-NOW
   esp_err_t result = esp_now_send(broadcastAddress, (uint8_t*)&js, sizeof(js));
