@@ -75,6 +75,7 @@ void mover(String direcao) {
   Serial.println("Movendo: " + direcao);
 }
 
+// função do movimento da garra 
 void movGarra (int state) {
   if (state == 1){
     garra.write(50);
@@ -89,7 +90,11 @@ void movGarra (int state) {
 void onReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
   if (len == sizeof(JoystickState)) {
     memcpy(&jsState, incomingData, sizeof(JoystickState));
+    // controle da garra
+    if (jsState.botaoAbre) movGarra (1);
+    else if (jsState.botaoFecha) movGarra (0);
 
+    //controle do movimento
     if (jsState.cima && jsState.esquerda) mover("cima_esquerda");
     else if (jsState.cima && jsState.direita) mover("cima_direita");
     else if (jsState.baixo && jsState.esquerda) mover("baixo_esquerda");
@@ -100,13 +105,13 @@ void onReceive(uint8_t *mac, uint8_t *incomingData, uint8_t len) {
     else if (jsState.direita) mover("direita");
     else mover("parar");
 
-    if (jsState.botaoAbre) movGarra (1);
-    else if (jsState.botaoFecha) movGarra (0);
   }
 }
 
 void setup() {
   Serial.begin(115200);
+
+  //-- inicialização do esp-NOW --
   WiFi.mode(WIFI_STA);
 
   if (esp_now_init() != 0) {
@@ -116,10 +121,14 @@ void setup() {
 
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
   esp_now_register_recv_cb(onReceive);
+  //-- fim da inicialização do esp-NOW--
   
+  // define as portas usadas para comunicar com os servos
   servoEsq.attach(D3);
   servoDir.attach(D4);
-  servoDir.attach(D6);
+  garra.attach(D6);
+
+  // deixa o openDecabot inicialmente parado
   mover("parar");
 
   pinMode(buzzer, OUTPUT);
